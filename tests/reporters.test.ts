@@ -7,7 +7,7 @@ function makeReport(partial?: Partial<Report>): Report {
   return {
     target: '/tmp/demo',
     score: 63,
-    band: 'Chaotic Neutral',
+    band: 'Neutral',
     strict: false,
     summary: { critical: 1, warnings: 2, info: 1 },
     issues: [
@@ -44,7 +44,7 @@ function makeReport(partial?: Partial<Report>): Report {
         penalty: 1,
       },
     ],
-    verdict: 'Your repo compiles on faith.',
+    verdict: 'Functional, but worth cleaning up before shipping.',
     ...partial,
   };
 }
@@ -56,7 +56,7 @@ describe('renderJson', () => {
     expect(parsed).toMatchObject({
       target: '/tmp/demo',
       score: 63,
-      band: 'Chaotic Neutral',
+      band: 'Neutral',
       strict: false,
       summary: { critical: 1, warnings: 2, info: 1 },
       verdict: expect.any(String),
@@ -80,19 +80,19 @@ describe('renderHuman', () => {
     const stripped = out.replace(/\u001b\[[0-9;]*m/g, '');
     expect(stripped).toContain('Vibeclean Report');
     expect(stripped).toContain('63/100');
-    expect(stripped).toContain('Chaotic Neutral');
+    expect(stripped).toContain('Neutral');
     expect(stripped).toContain('CRITICAL');
     expect(stripped).toContain('WARNINGS');
     expect(stripped).toContain('INFO');
-    expect(stripped).toContain('Your repo compiles on faith.');
+    expect(stripped).toContain('Functional, but worth cleaning up before shipping.');
   });
 
   it('omits verdict in no-funny mode but includes dry text', () => {
-    const dryReport = makeReport({ verdict: 'Repository has notable issues worth addressing.' });
+    const dryReport = makeReport({ verdict: 'Several issues worth addressing.' });
     const out = renderHuman(dryReport, { funny: false });
     const stripped = out.replace(/\u001b\[[0-9;]*m/g, '');
     expect(stripped).toContain('Verdict:');
-    expect(stripped).toContain('Repository has notable issues worth addressing.');
+    expect(stripped).toContain('Several issues worth addressing.');
   });
 
   it('handles clean reports', () => {

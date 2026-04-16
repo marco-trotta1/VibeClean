@@ -42,12 +42,12 @@ describe('scoring', () => {
     expect(bandFor(90).name).toBe('Pristine');
     expect(bandFor(89).name).toBe('Clean');
     expect(bandFor(75).name).toBe('Clean');
-    expect(bandFor(74).name).toBe('Chaotic Neutral');
-    expect(bandFor(60).name).toBe('Chaotic Neutral');
-    expect(bandFor(59).name).toBe('Cursed');
-    expect(bandFor(40).name).toBe('Cursed');
-    expect(bandFor(39).name).toBe('Biohazard');
-    expect(bandFor(0).name).toBe('Biohazard');
+    expect(bandFor(74).name).toBe('Neutral');
+    expect(bandFor(60).name).toBe('Neutral');
+    expect(bandFor(59).name).toBe('Needs Rebuild');
+    expect(bandFor(40).name).toBe('Needs Rebuild');
+    expect(bandFor(39).name).toBe('Nuke it');
+    expect(bandFor(0).name).toBe('Nuke it');
   });
 
   it('bands cover 0..100 continuously', () => {

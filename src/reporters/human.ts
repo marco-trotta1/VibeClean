@@ -33,11 +33,11 @@ function bandColor(band: string): Colorer {
       return chalk.greenBright;
     case 'Clean':
       return chalk.green;
-    case 'Chaotic Neutral':
+    case 'Neutral':
       return chalk.yellow;
-    case 'Cursed':
+    case 'Needs Rebuild':
       return chalk.redBright;
-    case 'Biohazard':
+    case 'Nuke it':
       return chalk.red;
     default:
       return chalk.white;

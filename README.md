@@ -12,7 +12,7 @@ It's deterministic. No LLMs. Just rules, file scans, and a little bit of judgmen
 ```
 🧼 Vibeclean Report for ./my-app
 
-Vibe Score: 63/100 (Chaotic Neutral)
+Vibe Score: 63/100 (Neutral)
 
 CRITICAL
 - Missing .env.example despite env usage (src/api/server.ts)
@@ -28,7 +28,7 @@ INFO
 - Mixed filename conventions in src/components/: kebab(4), pascal(3)
 
 Verdict:
-Your repo compiles on faith.
+Functional, but worth cleaning up before shipping.
 ```
 
 ## Why
@@ -100,7 +100,7 @@ vibeclean --version
       "line": null
     }
   ],
-  "verdict": "Your repo compiles on faith."
+  "verdict": "Functional, but worth cleaning up before shipping."
 }
 ```
 
@@ -108,11 +108,11 @@ vibeclean --version
 
 | Band | Range | Meaning |
 | --- | --- | --- |
-| Pristine | 90–100 | Cleaner than most production code. |
-| Clean | 75–89 | A few loose wires, but still roadworthy. |
-| Chaotic Neutral | 60–74 | Your repo compiles on faith. |
-| Cursed | 40–59 | 'Ship now, explain never' energy. |
-| Biohazard | 0–39 | Consider a controlled demolition. |
+| Pristine | 90–100 | Looks clean. Nothing meaningful to fix right now. |
+| Clean | 75–89 | Solid overall. A few small things worth tightening. |
+| Neutral | 60–74 | Functional, but worth cleaning up before shipping. |
+| Needs Rebuild | 40–59 | Real structural problems. Plan some focused cleanup. |
+| Nuke it | 0–39 | Hard to salvage without serious rework. |
 
 Scores start at 100 and subtract per issue. Representative weights:
 
