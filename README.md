@@ -34,7 +34,7 @@ Functional, but worth cleaning up before shipping.
 ## Why
 
 AI pair-programming produces code faster than anyone can review it. That code
-tends to ship with the same handful of smells:
+tends to ship with the same handful of problems:
 
 - secrets hard-coded during "let me just test this"
 - `mock for now` / `sample data` / `// TODO: real implementation`
