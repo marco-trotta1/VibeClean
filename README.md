@@ -1,14 +1,14 @@
-# vibescore
+# badvibes
 
-[![npm version](https://img.shields.io/npm/v/@marco-trotta1/vibescore.svg?style=flat-square)](https://www.npmjs.com/package/@marco-trotta1/vibescore)
-[![npm downloads](https://img.shields.io/npm/dm/@marco-trotta1/vibescore.svg?style=flat-square)](https://www.npmjs.com/package/@marco-trotta1/vibescore)
+[![npm version](https://img.shields.io/npm/v/badvibes.svg?style=flat-square)](https://www.npmjs.com/package/badvibes)
+[![npm downloads](https://img.shields.io/npm/dm/badvibes.svg?style=flat-square)](https://www.npmjs.com/package/badvibes)
 [![CI](https://img.shields.io/github/actions/workflow/status/marco-trotta1/vibescore/ci.yml?branch=main&style=flat-square)](https://github.com/marco-trotta1/vibescore/actions)
-[![license](https://img.shields.io/npm/l/@marco-trotta1/vibescore.svg?style=flat-square)](./LICENSE)
-[![node](https://img.shields.io/node/v/@marco-trotta1/vibescore.svg?style=flat-square)](https://nodejs.org)
+[![license](https://img.shields.io/npm/l/badvibes.svg?style=flat-square)](./LICENSE)
+[![node](https://img.shields.io/node/v/badvibes.svg?style=flat-square)](https://nodejs.org)
 
 > **Lint for AI slop.** Audits a repo and prints a **Vibe Score** from 0 to 100.
 
-`vibescore` is a zero-config CLI that scans a repository for the things AI-assisted
+`badvibes` is a zero-config CLI that scans a repository for the things AI-assisted
 codebases tend to accumulate: missing `.env.example`, committed secrets, giant files,
 TODO/FIXME drifts, duplicated blocks, placeholder stubs, missing tests, missing CI,
 thin READMEs, unresolved imports.
@@ -18,7 +18,7 @@ It's deterministic. No LLMs. Just rules, file scans, and a little bit of judgmen
 ## Quick start
 
 ```bash
-npx @marco-trotta1/vibescore .
+npx badvibes .
 ```
 
 That's it. No config file, no setup.
@@ -26,7 +26,7 @@ That's it. No config file, no setup.
 ## Example output
 
 ```
-🧼 Vibescore Report for ./my-app
+💀 BadVibes Report for ./my-app
 
 Vibe Score: 63/100 (Neutral)
 
@@ -58,16 +58,16 @@ tends to ship with the same handful of problems:
 - three copies of the same function in different folders
 - no `.env.example` to onboard the next human
 
-`vibescore` puts a number on it.
+`badvibes` puts a number on it.
 
 ## Install
 
 ```bash
 # one-off
-npx @marco-trotta1/vibescore .
+npx badvibes .
 
 # as a dev dependency
-npm install --save-dev @marco-trotta1/vibescore
+npm install --save-dev badvibes
 ```
 
 Requires Node.js 18+.
@@ -75,16 +75,16 @@ Requires Node.js 18+.
 ## Usage
 
 ```bash
-vibescore            # audit cwd
-vibescore .          # same
-vibescore ./my-app   # audit another path
+badvibes            # audit cwd
+badvibes .          # same
+badvibes ./my-app   # audit another path
 
-vibescore --json .                        # machine-readable output
-vibescore --strict .                      # harsher scoring + non-zero exit if score < 70
-vibescore --no-funny .                    # dry verdict, no jokes
-vibescore --max-file-lines 800 .          # override large-file threshold
-vibescore --help
-vibescore --version
+badvibes --json .                        # machine-readable output
+badvibes --strict .                      # harsher scoring + non-zero exit if score < 70
+badvibes --no-funny .                    # dry verdict
+badvibes --max-file-lines 800 .          # override large-file threshold
+badvibes --help
+badvibes --version
 ```
 
 ### Flags
@@ -93,7 +93,7 @@ vibescore --version
 | --- | --- | --- |
 | `--json` | `false` | Print a structured JSON report instead of the terminal view. |
 | `--strict` | `false` | Multiplies penalties by 1.5 and returns exit code 1 when score < 70 or any critical issue exists. |
-| `--no-funny` | | Removes the roast line; prints a dry verdict instead. |
+| `--no-funny` | | Removes the verdict line; prints a dry summary instead. |
 | `--max-file-lines <n>` | `600` | Severe threshold for file size. Warning threshold is half of this. |
 | `-v, --version` | | Print version. |
 | `-h, --help` | | Print usage. |
@@ -169,7 +169,7 @@ Scores start at 100 and subtract per issue. Representative weights:
 ## Programmatic API
 
 ```ts
-import { analyze } from '@marco-trotta1/vibescore';
+import { analyze } from 'badvibes';
 
 const report = await analyze({
   target: './my-app',
@@ -184,7 +184,7 @@ console.log(report.score, report.band);
 ## Roadmap
 
 - `--fix` suggestions for common issues
-- pluggable checks via `vibescore.config.ts`
+- pluggable checks via `badvibes.config.ts`
 - per-project ignore rules
 - GitHub Action that comments the score on PRs
 - HTML report mode

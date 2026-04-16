@@ -17,7 +17,7 @@ beforeAll(() => {
 });
 
 beforeEach(async () => {
-  dir = await fs.mkdtemp(path.join(os.tmpdir(), 'vibescore-cli-'));
+  dir = await fs.mkdtemp(path.join(os.tmpdir(), 'badvibes-cli-'));
 });
 
 afterEach(async () => {
@@ -74,7 +74,7 @@ describe('cli smoke', () => {
   it('--help prints usage', async () => {
     const { code, stdout } = await runCli(['--help']);
     expect(code).toBe(0);
-    expect(stdout).toMatch(/vibescore/i);
+    expect(stdout).toMatch(/badvibes/i);
     expect(stdout).toMatch(/--json/);
     expect(stdout).toMatch(/--strict/);
     expect(stdout).toMatch(/--max-file-lines/);

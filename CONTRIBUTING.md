@@ -1,4 +1,4 @@
-# Contributing to vibescore
+# Contributing to badvibes
 
 Thanks for considering a contribution. Small, focused PRs are strongly preferred.
 
@@ -13,8 +13,8 @@ Thanks for considering a contribution. Small, focused PRs are strongly preferred
 ## Development setup
 
 ```bash
-git clone https://github.com/marco-trotta1/vibescore.git
-cd vibescore
+git clone https://github.com/marco-trotta1/badvibes.git
+cd badvibes
 npm install
 npm test
 npm run dev .        # run CLI against current directory
