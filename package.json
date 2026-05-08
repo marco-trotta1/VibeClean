@@ -1,6 +1,6 @@
 {
   "name": "badvibes",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Lint for AI slop. Audits a repo and prints a Vibe Score from 0 to 100.",
   "keywords": [
     "cli",
