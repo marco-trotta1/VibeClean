@@ -28,6 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Programmatic API via `import { analyze } from 'badvibes'`.
 - Score bands: Pristine, Clean, Neutral, Needs Rebuild, Nuke it.
 
-[Unreleased]: https://github.com/marco-trotta1/vibescore/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/marco-trotta1/vibescore/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/marco-trotta1/vibescore/releases/tag/v0.1.0
+[Unreleased]: https://github.com/marco-trotta1/badvibes/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/marco-trotta1/badvibes/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/marco-trotta1/badvibes/releases/tag/v0.1.0
