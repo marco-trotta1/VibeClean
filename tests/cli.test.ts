@@ -77,6 +77,16 @@ describe('cli smoke', () => {
     expect(stdout).toMatch(/badvibes/i);
     expect(stdout).toMatch(/--json/);
     expect(stdout).toMatch(/--strict/);
+    expect(stdout).toMatch(/--roast/);
     expect(stdout).toMatch(/--max-file-lines/);
+  }, 30_000);
+
+  it('--no-funny suppresses --roast', async () => {
+    await write('src/index.ts', 'const x = process.env.FOO;\n');
+
+    const { code, stdout } = await runCli(['--roast', '--no-funny', dir]);
+    expect(code).toBe(0);
+    expect(stdout).toContain('Missing .env.example');
+    expect(stdout).not.toContain('credential charades');
   }, 30_000);
 });

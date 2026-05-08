@@ -1,6 +1,7 @@
 import path from 'node:path';
 import chalk from 'chalk';
 import type { Issue, Report } from '../types.js';
+import { roastIssue } from '../roasts.js';
 
 function formatLocation(issue: Issue): string {
   if (!issue.file) return '';
@@ -14,13 +15,15 @@ function section(
   title: string,
   color: (s: string) => string,
   issues: Issue[],
+  roast: boolean,
 ): string {
   if (issues.length === 0) return '';
   const lines: string[] = [];
   lines.push('');
   lines.push(color(title));
   for (const issue of issues) {
-    lines.push(`  ${color('-')} ${issue.message}${formatLocation(issue)}`);
+    const message = roast ? roastIssue(issue) : issue.message;
+    lines.push(`  ${color('-')} ${message}${formatLocation(issue)}`);
   }
   return lines.join('\n');
 }
@@ -46,6 +49,7 @@ function bandColor(band: string): Colorer {
 
 export interface HumanRenderOptions {
   funny: boolean;
+  roast?: boolean;
   cwd?: string;
 }
 
@@ -73,9 +77,11 @@ export function renderHuman(report: Report, opts: HumanRenderOptions): string {
   const warnings = report.issues.filter((i) => i.severity === 'warning');
   const info = report.issues.filter((i) => i.severity === 'info');
 
-  lines.push(section('CRITICAL', chalk.red.bold, critical));
-  lines.push(section('WARNINGS', chalk.yellow.bold, warnings));
-  lines.push(section('INFO', chalk.cyan.bold, info));
+  const roast = opts.funny && opts.roast === true;
+
+  lines.push(section('CRITICAL', chalk.red.bold, critical, roast));
+  lines.push(section('WARNINGS', chalk.yellow.bold, warnings, roast));
+  lines.push(section('INFO', chalk.cyan.bold, info, roast));
 
   if (critical.length + warnings.length + info.length === 0) {
     lines.push('');

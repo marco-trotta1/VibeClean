@@ -11,6 +11,7 @@ export interface CliFlags {
   json: boolean;
   strict: boolean;
   funny: boolean;
+  roast: boolean;
   maxFileLines: number;
 }
 
@@ -24,6 +25,7 @@ export function buildProgram(): Command {
     .option('--json', 'Print structured JSON report instead of human output', false)
     .option('--strict', 'Apply harsher scoring', false)
     .option('--no-funny', 'Remove verdict line / dry output')
+    .option('--roast', 'Rewrite issue descriptions as hardcoded roasts', false)
     .option(
       '--max-file-lines <number>',
       'Severe-size threshold for files (lines). Warn threshold is half this.',
@@ -34,6 +36,7 @@ export function buildProgram(): Command {
       const json = Boolean(opts.json);
       const strict = Boolean(opts.strict);
       const funny = opts.funny !== false;
+      const roast = funny && Boolean(opts.roast);
       const maxFileLines = typeof opts.maxFileLines === 'number' && Number.isFinite(opts.maxFileLines)
         ? Math.max(50, opts.maxFileLines)
         : 600;
@@ -46,9 +49,9 @@ export function buildProgram(): Command {
       });
 
       if (json) {
-        process.stdout.write(renderJson(report) + '\n');
+        process.stdout.write(renderJson(report, { roast }) + '\n');
       } else {
-        process.stdout.write(renderHuman(report, { funny, cwd: process.cwd() }) + '\n');
+        process.stdout.write(renderHuman(report, { funny, roast, cwd: process.cwd() }) + '\n');
       }
 
       if (strict) {

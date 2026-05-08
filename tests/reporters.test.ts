@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderJson } from '../src/reporters/json.js';
 import { renderHuman } from '../src/reporters/human.js';
+import { ROASTS, type RoastableIssueCode } from '../src/roasts.js';
 import type { Report } from '../src/types.js';
 
 function makeReport(partial?: Partial<Report>): Report {
@@ -72,6 +73,15 @@ describe('renderJson', () => {
     // Penalty (internal) should not leak into JSON output.
     expect(parsed.issues[0].penalty).toBeUndefined();
   });
+
+  it('can render roasted issue messages', () => {
+    const out = renderJson(makeReport(), { roast: true });
+    const parsed = JSON.parse(out);
+    expect(parsed.issues[0].message).toContain('credential charades');
+    expect(parsed.issues[1].message).toContain('junk drawer');
+    expect(parsed.issues[2].message).toContain('monuments to your broken promises');
+    expect(parsed.issues[3].message).toContain('gym membership');
+  });
 });
 
 describe('renderHuman', () => {
@@ -95,6 +105,23 @@ describe('renderHuman', () => {
     expect(stripped).toContain('Several issues worth addressing.');
   });
 
+  it('uses roast messages when roast mode is enabled', () => {
+    const out = renderHuman(makeReport(), { funny: true, roast: true });
+    const stripped = out.replace(/\u001b\[[0-9;]*m/g, '');
+    expect(stripped).toContain('credential charades');
+    expect(stripped).toContain('junk drawer');
+    expect(stripped).toContain('monuments to your broken promises');
+    expect(stripped).toContain('gym membership');
+    expect(stripped).not.toContain('Missing .env.example');
+  });
+
+  it('keeps neutral issue messages when no-funny suppresses roast mode', () => {
+    const out = renderHuman(makeReport(), { funny: false, roast: true });
+    const stripped = out.replace(/\u001b\[[0-9;]*m/g, '');
+    expect(stripped).toContain('Missing .env.example');
+    expect(stripped).not.toContain('credential charades');
+  });
+
   it('handles clean reports', () => {
     const clean = makeReport({
       score: 100,
@@ -106,5 +133,29 @@ describe('renderHuman', () => {
     const stripped = out.replace(/\u001b\[[0-9;]*m/g, '');
     expect(stripped).toContain('100/100');
     expect(stripped).toContain('No issues found');
+  });
+});
+
+describe('roast coverage', () => {
+  it('has a roast for every current issue code', () => {
+    const existingCodes: RoastableIssueCode[] = [
+      'broken-import',
+      'duplicate-block',
+      'file-large',
+      'file-very-large',
+      'inconsistent-naming',
+      'markers',
+      'missing-ci',
+      'missing-env-example',
+      'missing-readme',
+      'no-tests',
+      'no-tests-critical',
+      'placeholder-stub',
+      'possibly-unused-dep',
+      'potential-secret',
+      'thin-readme',
+    ];
+
+    expect(Object.keys(ROASTS).sort()).toEqual([...existingCodes].sort());
   });
 });
