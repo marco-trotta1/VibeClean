@@ -1,0 +1,22 @@
+name: badvibes
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  badvibes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run badvibes
+        uses: marco-trotta1/badvibes@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          strict: true

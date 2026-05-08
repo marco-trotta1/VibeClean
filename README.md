@@ -100,6 +100,40 @@ badvibes --version
 | `-v, --version` | | Print version. |
 | `-h, --help` | | Print usage. |
 
+## GitHub Action
+
+Use the GitHub Action to run `badvibes` on every pull request and post a clean PR
+comment with the **score**, verdict, and issue table.
+
+```yaml
+name: badvibes
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  badvibes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run badvibes
+        uses: marco-trotta1/badvibes@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          strict: true
+```
+
+With `strict: true`, the action runs `badvibes --strict` and fails the check only
+when the resulting score is below `70`. Set `strict: false` to keep it
+informational.
+
 ### JSON shape
 
 ```json
@@ -188,7 +222,6 @@ console.log(report.score, report.band);
 - `--fix` suggestions for common issues
 - pluggable checks via `badvibes.config.ts`
 - per-project ignore rules
-- GitHub Action that comments the score on PRs
 - HTML report mode
 - severity thresholds (e.g. `--min-score 75`)
 - more language-specific heuristics (Python, Go)

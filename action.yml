@@ -1,0 +1,250 @@
+name: badvibes
+description: Run badvibes on pull requests and comment with the score, issues, and verdict.
+author: marco-trotta1
+
+inputs:
+  github-token:
+    description: GitHub token used to create or update the pull request comment.
+    required: false
+    default: ''
+  strict:
+    description: Run badvibes in strict mode and fail the check when the score is below 70.
+    required: false
+    default: 'false'
+  path:
+    description: Path to the repository or subdirectory to audit.
+    required: false
+    default: '.'
+  max-file-lines:
+    description: Severe-size threshold for files. The warning threshold is half this value.
+    required: false
+    default: '600'
+
+outputs:
+  score:
+    description: The badvibes score from 0 to 100.
+    value: ${{ steps.report.outputs.score }}
+  band:
+    description: The score band.
+    value: ${{ steps.report.outputs.band }}
+  verdict:
+    description: The badvibes verdict.
+    value: ${{ steps.report.outputs.verdict }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install action dependencies
+      shell: bash
+      run: |
+        set -euo pipefail
+        npm ci --prefix "$GITHUB_ACTION_PATH"
+
+    - name: Build badvibes
+      shell: bash
+      run: |
+        set -euo pipefail
+        npm run build --prefix "$GITHUB_ACTION_PATH"
+
+    - name: Run badvibes
+      id: report
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_STRICT: ${{ inputs.strict }}
+        INPUT_MAX_FILE_LINES: ${{ inputs.max-file-lines }}
+        REPORT_PATH: ${{ runner.temp }}/badvibes-report.json
+      run: |
+        set -euo pipefail
+
+        strict="$(printf '%s' "$INPUT_STRICT" | tr '[:upper:]' '[:lower:]')"
+        case "$strict" in
+          true|false) ;;
+          *) echo "strict must be true or false, got: $INPUT_STRICT" >&2; exit 2 ;;
+        esac
+
+        if ! [[ "$INPUT_MAX_FILE_LINES" =~ ^[0-9]+$ ]]; then
+          echo "max-file-lines must be a number, got: $INPUT_MAX_FILE_LINES" >&2
+          exit 2
+        fi
+
+        args=(--json --max-file-lines "$INPUT_MAX_FILE_LINES")
+        if [[ "$strict" == "true" ]]; then
+          args+=(--strict)
+        fi
+        args+=("$INPUT_PATH")
+
+        set +e
+        node "$GITHUB_ACTION_PATH/dist/cli.js" "${args[@]}" > "$REPORT_PATH"
+        status=$?
+        set -e
+
+        if [[ ! -s "$REPORT_PATH" ]]; then
+          echo "badvibes did not produce a JSON report." >&2
+          if [[ "$status" -eq 0 ]]; then
+            exit 2
+          fi
+          exit "$status"
+        fi
+
+        node <<'NODE'
+        const fs = require('node:fs');
+
+        const reportPath = process.env.REPORT_PATH;
+        const outputPath = process.env.GITHUB_OUTPUT;
+        const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+
+        fs.appendFileSync(outputPath, `score=${report.score}\n`);
+        fs.appendFileSync(outputPath, `band=${report.band}\n`);
+        fs.appendFileSync(outputPath, `verdict=${String(report.verdict).replace(/\r?\n/g, ' ')}\n`);
+        NODE
+
+    - name: Comment on pull request
+      if: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token || github.token }}
+        REPORT_PATH: ${{ runner.temp }}/badvibes-report.json
+        GITHUB_API_URL: ${{ github.api_url }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_EVENT_PATH: ${{ github.event_path }}
+        INPUT_STRICT: ${{ inputs.strict }}
+      run: |
+        set -euo pipefail
+
+        node <<'NODE'
+        const fs = require('node:fs');
+
+        const marker = '<!-- badvibes-action-comment -->';
+        const token = process.env.GITHUB_TOKEN;
+        const apiUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
+        const repoFullName = process.env.GITHUB_REPOSITORY;
+        const eventPath = process.env.GITHUB_EVENT_PATH;
+        const reportPath = process.env.REPORT_PATH;
+
+        if (!token) {
+          throw new Error('github-token is required to post a pull request comment.');
+        }
+
+        const event = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
+        const prNumber = event.pull_request?.number;
+        if (!prNumber) {
+          console.log('No pull request found in event payload; skipping comment.');
+          process.exit(0);
+        }
+
+        const [owner, repo] = repoFullName.split('/');
+        const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+        const issues = Array.isArray(report.issues) ? report.issues : [];
+        const summary = report.summary || {};
+        const strict = String(process.env.INPUT_STRICT || '').toLowerCase() === 'true';
+
+        function tableCell(value) {
+          return String(value ?? '')
+            .replace(/\r?\n/g, ' ')
+            .replace(/\|/g, '\\|')
+            .trim() || '-';
+        }
+
+        function severityLabel(severity) {
+          if (severity === 'critical') return '🚨 critical';
+          if (severity === 'warning') return '⚠️ warning';
+          return 'ℹ️ info';
+        }
+
+        function locationFor(issue) {
+          if (!issue.file) return '-';
+          return issue.line ? `${issue.file}:${issue.line}` : issue.file;
+        }
+
+        const lines = [
+          marker,
+          '## 💀 badvibes report',
+          '',
+          `**Score: ${report.score}/100** (${report.band})`,
+          '',
+          `🧭 **Verdict:** ${report.verdict}`,
+          '',
+          '| Critical | Warnings | Info |',
+          '| ---: | ---: | ---: |',
+          `| ${summary.critical ?? 0} | ${summary.warnings ?? 0} | ${summary.info ?? 0} |`,
+          '',
+        ];
+
+        if (issues.length > 0) {
+          lines.push('### Issues', '');
+          lines.push('| Severity | Issue | Location |');
+          lines.push('| --- | --- | --- |');
+          for (const issue of issues) {
+            lines.push(`| ${tableCell(severityLabel(issue.severity))} | ${tableCell(issue.message)} | ${tableCell(locationFor(issue))} |`);
+          }
+        } else {
+          lines.push('### Issues', '', '✅ No issues found.');
+        }
+
+        lines.push('');
+        if (strict) {
+          const status = Number(report.score) < 70 ? '❌ Strict mode will fail this check because the score is below 70.' : '✅ Strict mode passed.';
+          lines.push(status);
+        } else {
+          lines.push('ℹ️ Strict mode is disabled, so this check is informational.');
+        }
+
+        const body = lines.join('\n');
+        const commentsUrl = `${apiUrl}/repos/${owner}/${repo}/issues/${prNumber}/comments`;
+        const headers = {
+          authorization: `Bearer ${token}`,
+          accept: 'application/vnd.github+json',
+          'content-type': 'application/json',
+          'x-github-api-version': '2022-11-28',
+          'user-agent': 'badvibes-action',
+        };
+
+        async function request(url, options = {}) {
+          const response = await fetch(url, { ...options, headers: { ...headers, ...(options.headers || {}) } });
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`GitHub API request failed (${response.status}): ${text}`);
+          }
+          if (response.status === 204) return null;
+          return response.json();
+        }
+
+        const comments = await request(`${commentsUrl}?per_page=100`);
+        const existing = comments.find((comment) => comment.body?.includes(marker));
+
+        if (existing) {
+          await request(existing.url, {
+            method: 'PATCH',
+            body: JSON.stringify({ body }),
+          });
+          console.log(`Updated badvibes comment on PR #${prNumber}.`);
+        } else {
+          await request(commentsUrl, {
+            method: 'POST',
+            body: JSON.stringify({ body }),
+          });
+          console.log(`Posted badvibes comment on PR #${prNumber}.`);
+        }
+        NODE
+
+    - name: Enforce strict threshold
+      shell: bash
+      env:
+        INPUT_STRICT: ${{ inputs.strict }}
+        SCORE: ${{ steps.report.outputs.score }}
+      run: |
+        set -euo pipefail
+
+        strict="$(printf '%s' "$INPUT_STRICT" | tr '[:upper:]' '[:lower:]')"
+        if [[ "$strict" == "true" && "$SCORE" -lt 70 ]]; then
+          echo "badvibes strict mode failed: score $SCORE is below 70."
+          exit 1
+        fi
+
+        echo "badvibes check passed with score $SCORE."
