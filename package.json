@@ -24,12 +24,12 @@
   "author": "marco-trotta1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/marco-trotta1/vibescore.git"
+    "url": "git+https://github.com/marco-trotta1/badvibes.git"
   },
   "bugs": {
-    "url": "https://github.com/marco-trotta1/vibescore/issues"
+    "url": "https://github.com/marco-trotta1/badvibes/issues"
   },
-  "homepage": "https://github.com/marco-trotta1/vibescore#readme",
+  "homepage": "https://github.com/marco-trotta1/badvibes#readme",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",

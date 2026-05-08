@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/badvibes.svg?style=flat-square)](https://www.npmjs.com/package/badvibes)
 [![npm downloads](https://img.shields.io/npm/dm/badvibes.svg?style=flat-square)](https://www.npmjs.com/package/badvibes)
-[![CI](https://img.shields.io/github/actions/workflow/status/marco-trotta1/vibescore/ci.yml?branch=main&style=flat-square)](https://github.com/marco-trotta1/vibescore/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/marco-trotta1/badvibes/ci.yml?branch=main&style=flat-square)](https://github.com/marco-trotta1/badvibes/actions)
 [![license](https://img.shields.io/npm/l/badvibes.svg?style=flat-square)](./LICENSE)
 [![node](https://img.shields.io/node/v/badvibes.svg?style=flat-square)](https://nodejs.org)
 
